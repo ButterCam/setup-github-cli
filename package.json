@@ -1,25 +1,26 @@
 {
-  "name": "setup-hub",
+  "name": "setup-gh",
   "version": "1.0.0",
   "private": true,
-  "description": "setup hub action",
-  "main": "lib/setup-hub.js",
+  "description": "setup github cli action",
+  "main": "lib/setup-gh.js",
   "scripts": {
     "build": "tsc",
+    "package": "ncc build --source-map --license licenses.txt",
     "format": "prettier --write **/*.ts",
     "format-check": "prettier --check **/*.ts",
     "test": "jest"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/geertvdc/setup-hub.git"
+    "url": "git+https://github.com/ButterCam/setup-github-cli.git"
   },
   "keywords": [
     "actions",
     "node",
     "setup"
   ],
-  "author": "Geert van der Cruijsen",
+  "author": "ButterCam",
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.0.0",
@@ -33,6 +34,7 @@
     "@types/jest": "^24.0.13",
     "@types/node": "^12.0.4",
     "@types/semver": "^6.0.0",
+    "@vercel/ncc": "^0.33.3",
     "husky": "^3.0.0",
     "jest": "^24.8.0",
     "jest-circus": "^24.7.1",

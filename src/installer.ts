@@ -2,7 +2,6 @@ let tempDirectory = process.env['RUNNER_TEMP'] || '';
 
 import * as core from '@actions/core';
 import * as io from '@actions/io';
-import * as exec from '@actions/exec';
 import * as tc from '@actions/tool-cache';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -26,10 +25,10 @@ if (!tempDirectory) {
   tempDirectory = path.join(baseLocation, 'actions', 'temp');
 }
 
-export async function getHub(version: string): Promise<void> {
-  core.debug('Downloading hub from Github releases');
+export async function getGithubCli(version: string): Promise<void> {
+  core.debug('Downloading gh from Github releases');
   const downloadInfo = await getDownloadInfo(version);
-  let toolPath = tc.find('hub', downloadInfo.version);
+  let toolPath = tc.find('gh', downloadInfo.version);
   if (toolPath) {
     core.debug(`Tool found in cache ${toolPath}`);
   } else {
@@ -37,43 +36,29 @@ export async function getHub(version: string): Promise<void> {
     core.debug(
       `Tool not found in cache. Download tool from url: ${downloadInfo.url}`
     );
-    let hubBin = await tc.downloadTool(downloadInfo.url);
-    core.debug(`Downloaded file: ${hubBin}`);
-    compressedFileExtension = IS_WINDOWS ? '.zip' : '.tgz';
+    let ghBin = await tc.downloadTool(downloadInfo.url);
+    core.debug(`Downloaded file: ${ghBin}`);
+    compressedFileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
 
     let tempDir: string = path.join(
       tempDirectory,
       'temp_' + Math.floor(Math.random() * 2000000000)
     );
-    const hubDir = await unzipHubDownload(
-      hubBin,
+    const ghDir = await unzipGithubCliDownload(
+      ghBin,
       compressedFileExtension,
       tempDir
     );
-    core.debug(`hub extracted to ${hubDir}`);
+    core.debug(`gh extracted to ${ghDir}`);
     core.debug(`caching directory containing version ${downloadInfo.version}`);
-    toolPath = await tc.cacheDir(hubDir, 'hub', downloadInfo.version);
+    toolPath = await tc.cacheDir(ghDir, 'gh', downloadInfo.version);
   }
-  core.debug(`adding hub to path: ${toolPath}`);
+  core.debug(`adding gh to path: ${toolPath}`);
   if (IS_WINDOWS) {
     core.addPath(toolPath);
   } else {
     core.addPath(path.join(toolPath, 'bin'));
   }
-}
-
-function getFileEnding(file: string): string {
-  let fileEnding = '';
-
-  if (file.endsWith('.tgz')) {
-    fileEnding = '.tgz';
-  } else if (file.endsWith('.zip')) {
-    fileEnding = '.zip';
-  } else {
-    throw new Error(`${file} has an unsupported file extension`);
-  }
-
-  return fileEnding;
 }
 
 async function extractFiles(
@@ -88,7 +73,7 @@ async function extractFiles(
     throw new Error(`Failed to extract ${file} - it is a directory`);
   }
 
-  if ('.tgz' === fileEnding) {
+  if ('.tar.gz' === fileEnding) {
     await tc.extractTar(file, destinationFolder);
   } else if ('.zip' === fileEnding) {
     await tc.extractZip(file, destinationFolder);
@@ -98,7 +83,7 @@ async function extractFiles(
   }
 }
 
-async function unzipHubDownload(
+async function unzipGithubCliDownload(
   repoRoot: string,
   fileEnding: string,
   destinationFolder: string,
@@ -112,11 +97,11 @@ async function unzipHubDownload(
   const stats = fs.statSync(file);
   if (stats.isFile()) {
     await extractFiles(file, fileEnding, destinationFolder);
-    const hubDir = path.join(
+    const ghDir = path.join(
       destinationFolder,
       fs.readdirSync(destinationFolder)[0]
     );
-    return hubDir;
+    return ghDir;
   } else {
     throw new Error(`file argument ${file} is not a file`);
   }
@@ -124,13 +109,13 @@ async function unzipHubDownload(
 
 async function getDownloadInfo(version: string): Promise<DownloadInfo> {
   let platform = '';
-  let fileExtension = IS_WINDOWS ? '.zip' : '.tgz';
+  let fileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
 
   if (IS_WINDOWS) {
     platform = `windows`;
   } else {
     if (process.platform === 'darwin') {
-      platform = `darwin`;
+      platform = `macOS`;
     } else {
       platform = `linux`;
     }
@@ -141,12 +126,12 @@ async function getDownloadInfo(version: string): Promise<DownloadInfo> {
     let validVersion = semver.valid(version);
     if (!validVersion) {
       throw new Error(
-        `No valid download found for version ${version}. Check https://github.com/github/hub/releases for a list of valid releases`
+        `No valid download found for version ${version}. Check https://github.com/cli/cli/releases for a list of valid releases`
       );
     }
     //specific version, get that version from releases
     return {
-      url: `https://github.com/github/hub/releases/download/v${version}/hub-${platform}-amd64-${version}${fileExtension}`,
+      url: `https://github.com/cli/cli/releases/download/v${version}/gh_${version}_${platform}_amd64${fileExtension}`,
       version: version
     } as DownloadInfo;
   } else {
@@ -154,14 +139,14 @@ async function getDownloadInfo(version: string): Promise<DownloadInfo> {
     core.debug('Downloading latest release because no version selected');
     let http: httpm.HttpClient = new httpm.HttpClient('setup-hub');
     let releaseJson = await (await http.get(
-      'https://api.github.com/repos/github/hub/releases/latest'
+      'https://api.github.com/repos/cli/cli/releases/latest'
     )).readBody();
     let releasesInfo = JSON.parse(releaseJson);
     core.debug(`latest version = ${releasesInfo.tag_name}`);
     let latestVersion = releasesInfo.tag_name.substring(1);
 
     return {
-      url: `https://github.com/github/hub/releases/latest/download/hub-${platform}-amd64-${latestVersion}${fileExtension}`,
+      url: `https://github.com/cli/cli/releases/latest/download/gh_${latestVersion}_${platform}_amd64${fileExtension}`,
       version: latestVersion
     } as DownloadInfo;
   }

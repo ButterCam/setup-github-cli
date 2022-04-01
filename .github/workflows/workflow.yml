@@ -3,24 +3,22 @@ on: [push]
 jobs:
   build:
     name: Build
-    runs-on: ${{ matrix.operating-system }}
-    strategy:
-      matrix:
-        operating-system: [ubuntu-latest, windows-latest]
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@master
+      uses: actions/checkout@v3
 
-    - name: Set Node.js 10.x
-      uses: actions/setup-node@master
+    - name: Set Node.js 12.x
+      uses: actions/setup-node@v3
       with:
-        version: 10.x
+        node-version: '12'
 
-    - name: npm install
-      run: npm install
-
-    - name: Lint
-      run: npm run format-check
+    - name: Build
+      run: |
+        npm install
+        npm run format-check
+        npm run build
+        npm run package
 
   test:
     needs: build
@@ -30,15 +28,14 @@ jobs:
       matrix:
         operating-system: [ubuntu-latest, windows-latest, macOS-latest]
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v3
     
     - name: Install hub
-      uses: geertvdc/setup-hub@master
+      uses: ButterCam/setup-github-cli@master
       
-    - name: run hub
+    - name: run gh
       env:
         GITHUB_USER: ${{ secrets.GITHUB_USER }}
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
-           hub --version
-           hub release
+           gh --version
