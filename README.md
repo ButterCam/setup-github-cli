@@ -6,7 +6,7 @@ This github action allows for installation of the [Github CLI](https://github.co
 
 It has support for Linux, MacOS and Windows runners.
 
-Github CLI allows you to do more with github specific features like releases, issues and pull requests in your Github Action workflow
+`gh` is GitHub on the command line. It brings pull requests, issues, and other GitHub concepts to the terminal next to where you are already working with `git` and your code.
 
 # Usage
 
