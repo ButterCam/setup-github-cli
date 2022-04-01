@@ -30,7 +30,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Install hub
+    - name: Install Github Cli
       uses: ButterCam/setup-github-cli@master
       
     - name: run gh
