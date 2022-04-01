@@ -1,12 +1,12 @@
-# setup-hub
+# setup-github-cli
 
-[![Actions Status](https://github.com/geertvdc/setup-hub/workflows/Build%20%26%20Test/badge.svg)](https://github.com/geertvdc/setup-hub/actions)
+[![Actions Status](https://github.com/ButterCam/setup-github-cli/workflows/Build%20%26%20Test/badge.svg)](https://github.com/ButterCam/setup-github-cli/actions)
 
-This github action allows for installation of the [Github hub CLI](https://github.com/github/hub) to be used in your actions pipeline.
+This github action allows for installation of the [Github CLI](https://github.com/cli/cli) to be used in your actions pipeline.
 
 It has support for Linux, MacOS and Windows runners.
 
-Hub CLI allows you to do more with github specific features like releases, issues and pull requests in your Github Action workflow
+Github CLI allows you to do more with github specific features like releases, issues and pull requests in your Github Action workflow
 
 # Usage
 
@@ -16,9 +16,9 @@ Basic:
 ```yaml
 steps:
 - uses: actions/checkout@latest
-- uses: geertvdc/setup-hub@master
+- uses: ButterCam/setup-github-cli@master
 
-- run: hub --version
+- run: gh --version
 ```
 
 Authorized calls to change things:
@@ -26,17 +26,15 @@ Authorized calls to change things:
 steps:
 - uses: actions/checkout@v1
 
-- name: Install hub
-    uses: geertvdc/setup-hub@master
+- name: Install Github
+    uses: ButterCam/setup-github-cli@master
     
-- name: run hub commands
+- name: run gh commands
     env:
-      GITHUB_USER: ${{ secrets.GITHUB_USER }}
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     run: |
-         hub release
+         gh release
 ```
-add GITHUB_USER with your github user account to secrets.
 
 # License
 
