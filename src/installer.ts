@@ -25,9 +25,9 @@ if (!tempDirectory) {
   tempDirectory = path.join(baseLocation, 'actions', 'temp');
 }
 
-export async function getGithubCli(version: string): Promise<void> {
+export async function getGithubCli(version: string, token: string | undefined): Promise<void> {
   core.debug('Downloading gh from Github releases');
-  const downloadInfo = await getDownloadInfo(version);
+  const downloadInfo = await getDownloadInfo(version, token);
   let toolPath = tc.find('gh', downloadInfo.version);
   if (toolPath) {
     core.debug(`Tool found in cache ${toolPath}`);
@@ -107,7 +107,7 @@ async function unzipGithubCliDownload(
   }
 }
 
-async function getDownloadInfo(version: string): Promise<DownloadInfo> {
+async function getDownloadInfo(version: string, token: string | undefined): Promise<DownloadInfo> {
   let platform = '';
   let fileExtension = IS_WINDOWS ? '.zip' : '.tar.gz';
 
@@ -138,7 +138,11 @@ async function getDownloadInfo(version: string): Promise<DownloadInfo> {
     //get latest release
     core.debug('Downloading latest release because no version selected');
     let http: httpm.HttpClient = new httpm.HttpClient('setup-hub');
-    let releaseJson = await (await http.get(
+    let releaseJson = await (token ? await http.get(
+      'https://api.github.com/repos/cli/cli/releases/latest', {
+        Authorization: token
+      }
+    ) :await http.get(
       'https://api.github.com/repos/cli/cli/releases/latest'
     )).readBody();
     let releasesInfo = JSON.parse(releaseJson);

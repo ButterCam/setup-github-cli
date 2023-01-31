@@ -8,6 +8,9 @@ inputs:
   version:
     description: 'Version of gh release, if not entered will use latest'
     required: false
+  repo-token:
+    description: 'use the GITHUB_TOKEN to make authenticated API call'
+    required: false
 runs:
   using: 'node12'
   main: 'dist/index.js'
